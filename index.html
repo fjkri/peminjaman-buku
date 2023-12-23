@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplikasi Peminjaman Buku</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+
+    #formContainer {
+      width: 50%;
+      margin: 20px auto;
+      text-align: left;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 15px;
+    }
+
+    .input-group label {
+      margin-bottom: 5px;
+      color: #333;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 80%;
+      margin: 20px auto;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    button {
+      padding: 10px 15px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .edit-btn, .delete-btn {
+      padding: 5px 10px;
+      cursor: pointer;
+      margin-right: 5px;
+      border: none;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .edit-btn:hover {
+      background-color: #2196F3;
+      color: #fff;
+    }
+
+    .delete-btn {
+      background-color: #f44336;
+      color: #fff;
+    }
+
+    .delete-btn:hover {
+      background-color: #d32f2f;
+    }
+  </style>
+</head>
+<body>
+
+<h2 style="color: #333;">Aplikasi Peminjaman Buku</h2>
+
+<div id="formContainer">
+  <div class="input-group">
+    <label for="namaDepan">Nama Depan:</label>
+    <input type="text" id="namaDepan" required>
+  </div>
+
+  <div class="input-group">
+    <label for="namaBelakang">Nama Belakang:</label>
+    <input type="text" id="namaBelakang" required>
+  </div>
+
+  <div class="input-group">
+    <label for="nomorKartu">Nomor Kartu Anggota:</label>
+    <input type="text" id="nomorKartu" required>
+  </div>
+
+  <div class="input-group">
+    <label for="nomorTelepon">Nomor Telepon:</label>
+    <input type="text" id="nomorTelepon" required>
+  </div>
+
+  <div class="input-group">
+    <label for="judul">Judul Buku:</label>
+    <input type="text" id="judul" required>
+  </div>
+
+  <div class="input-group">
+    <label for="tglPeminjaman">Tanggal Peminjaman:</label>
+    <input type="date" id="tglPeminjaman" required>
+  </div>
+
+  <div class="input-group">
+    <label for="tglPengembalian">Tanggal Pengembalian:</label>
+    <input type="date" id="tglPengembalian" required>
+  </div>
+
+  <div class="input-group">
+    <label for="tglDikembalikan">Tanggal Dikembalikan:</label>
+    <input type="date" id="tglDikembalikan" required>
+  </div>
+
+  <button type="button" onclick="tambahPeminjaman()">Tambah Peminjaman</button>
+</div>
+
+<br>
+
+<table id="tabelPeminjaman">
+  <tr>
+    <th>Nama Depan</th>
+    <th>Nama Belakang</th>
+    <th>Nomor Kartu</th>
+    <th>Nomor Telepon</th>
+    <th>Judul Buku</th>
+    <th>Tanggal Peminjaman</th>
+    <th>Tanggal Pengembalian</th>
+    <th>Tanggal Dikembalikan</th>
+    <th>Total Denda</th>
+    <th>Edit</th>
+    <th>Hapus</th>
+  </tr>
+</table>
+
+<script>
+  class Peminjaman {
+    constructor(namaDepan, namaBelakang, nomorKartu, nomorTelepon, judul, tglPeminjaman, tglPengembalian, tglDikembalikan) {
+      this.namaDepan = namaDepan;
+      this.namaBelakang = namaBelakang;
+      this.nomorKartu = nomorKartu;
+      this.nomorTelepon = nomorTelepon;
+      this.judul = judul;
+      this.tglPeminjaman = tglPeminjaman;
+      this.tglPengembalian = tglPengembalian;
+      this.tglDikembalikan = tglDikembalikan;
+      this.hitungDenda();
+    }
+
+    hitungDenda() {
+      const batasWaktu = new Date(this.tglPengembalian);
+      const hariIni = new Date(this.tglDikembalikan || Date.now());
+      const selisihHari = Math.max(0, Math.floor((hariIni - batasWaktu) / (1000 * 60 * 60 * 24)));
+      this.totalDenda = selisihHari * 25000;
+    }
+  }
+
+  let dataPeminjaman = [];
+
+  function tambahPeminjaman() {
+    const namaDepan = document.getElementById('namaDepan').value;
+    const namaBelakang = document.getElementById('namaBelakang').value;
+    const nomorKartu = document.getElementById('nomorKartu').value;
+    const nomorTelepon = document.getElementById('nomorTelepon').value;
+    const judul = document.getElementById('judul').value;
+    const tglPeminjaman = document.getElementById('tglPeminjaman').value;
+    const tglPengembalian = document.getElementById('tglPengembalian').value;
+    const tglDikembalikan = document.getElementById('tglDikembalikan').value;
+
+    const peminjaman = new Peminjaman(namaDepan, namaBelakang, nomorKartu, nomorTelepon, judul, tglPeminjaman, tglPengembalian, tglDikembalikan);
+    dataPeminjaman.push(peminjaman);
+    tambahkanKeTabel(peminjaman, dataPeminjaman.length - 1);
+    resetForm();
+  }
+
+  function tambahkanKeTabel(peminjaman, index) {
+    const tabel = document.getElementById('tabelPeminjaman');
+    const row = tabel.insertRow(-1);
+    const cellNamaDepan = row.insertCell(0);
+    const cellNamaBelakang = row.insertCell(1);
+    const cellNomorKartu = row.insertCell(2);
+    const cellNomorTelepon = row.insertCell(3);
+    const cellJudul = row.insertCell(4);
+    const cellTglPeminjaman = row.insertCell(5);
+    const cellTglPengembalian = row.insertCell(6);
+    const cellTglDikembalikan = row.insertCell(7);
+    const cellTotalDenda = row.insertCell(8);
+    const cellEdit = row.insertCell(9);
+    const cellHapus = row.insertCell(10);
+
+    cellNamaDepan.innerHTML = peminjaman.namaDepan;
+    cellNamaBelakang.innerHTML = peminjaman.namaBelakang;
+    cellNomorKartu.innerHTML = peminjaman.nomorKartu;
+    cellNomorTelepon.innerHTML = peminjaman.nomorTelepon;
+    cellJudul.innerHTML = peminjaman.judul;
+    cellTglPeminjaman.innerHTML = peminjaman.tglPeminjaman;
+    cellTglPengembalian.innerHTML = peminjaman.tglPengembalian;
+    cellTglDikembalikan.innerHTML = peminjaman.tglDikembalikan || '-';
+    cellTotalDenda.innerHTML = peminjaman.totalDenda.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+
+    const editButton = document.createElement('button');
+    editButton.innerHTML = 'Edit';
+    editButton.classList.add('edit-btn');
+    editButton.addEventListener('click', function() {
+      editPeminjaman(index);
+    });
+
+    const hapusButton = document.createElement('button');
+    hapusButton.innerHTML = 'Hapus';
+    hapusButton.classList.add('delete-btn');
+    hapusButton.addEventListener('click', function() {
+      hapusPeminjaman(index);
+    });
+
+    cellEdit.appendChild(editButton);
+    cellHapus.appendChild(hapusButton);
+  }
+
+  function editPeminjaman(index) {
+    const peminjaman = dataPeminjaman[index];
+
+    document.getElementById('namaDepan').value = peminjaman.namaDepan;
+    document.getElementById('namaBelakang').value = peminjaman.namaBelakang;
+    document.getElementById('nomorKartu').value = peminjaman.nomorKartu;
+    document.getElementById('nomorTelepon').value = peminjaman.nomorTelepon;
+    document.getElementById('judul').value = peminjaman.judul;
+    document.getElementById('tglPeminjaman').value = peminjaman.tglPeminjaman;
+    document.getElementById('tglPengembalian').value = peminjaman.tglPengembalian;
+    document.getElementById('tglDikembalikan').value = peminjaman.tglDikembalikan || '';
+    
+    hapusPeminjaman(index); // Hapus data yang akan diedit
+  }
+
+  function hapusPeminjaman(index) {
+    dataPeminjaman.splice(index, 1);
+    refreshTabel();
+  }
+
+  function refreshTabel() {
+    const tabel = document.getElementById('tabelPeminjaman');
+    tabel.innerHTML = '<tr><th>Nama Depan</th><th>Nama Belakang</th><th>Nomor Kartu</th><th>Nomor Telepon</th><th>Judul Buku</th><th>Tanggal Peminjaman</th><th>Tanggal Pengembalian</th><th>Tanggal Dikembalikan</th><th>Total Denda</th><th>Edit</th><th>Hapus</th></tr>';
+    for (let i = 0; i < dataPeminjaman.length; i++) {
+      tambahkanKeTabel(dataPeminjaman[i], i);
+    }
+  }
+
+  function resetForm() {
+    document.getElementById('namaDepan').value = '';
+    document.getElementById('namaBelakang').value = '';
+    document.getElementById('nomorKartu').value = '';
+    document.getElementById('nomorTelepon').value = '';
+    document.getElementById('judul').value = '';
+    document.getElementById('tglPeminjaman').value = '';
+    document.getElementById('tglPengembalian').value = '';
+    document.getElementById('tglDikembalikan').value = '';
+  }
+</script>
+
+</body>
+</html>
